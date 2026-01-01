@@ -13,6 +13,7 @@ import { shortCommand } from "./commands/short.js";
 import P from "pino";
 import qr from "qr-image";
 import fs from "fs";
+import { join } from "path";
 
 /* ===========================
    GLOBAL CRASH PROTECTION
@@ -29,7 +30,9 @@ process.on("unhandledRejection", (reason) => {
    START SOCKET
    =========================== */
 async function startSock() {
-  const { state, saveCreds } = await useMultiFileAuthState("auth_info");
+const authPath = join(process.cwd(), "data", "auth_info"); // absolute path to persistent folder
+const { state, saveCreds } = await useMultiFileAuthState(authPath);
+
   const { version } = await fetchLatestBaileysVersion();
 
   const sock = makeWASocket({
