@@ -14,6 +14,7 @@ import P from "pino";
 import qr from "qr-image";
 import fs from "fs";
 import { join } from "path";
+import qrcode from "qrcode-terminal";
 
 /* ===========================
    GLOBAL CRASH PROTECTION
@@ -47,15 +48,11 @@ async function startSock() {
 
     // Only save QR if no session exists
     const sessionFile = join(authPath, "creds.json");
-    if (qrCode && !fs.existsSync(sessionFile)) {
-      console.log("📸 QR Code received! Scan this once and session will persist.");
-      try {
-        const qrImage = qr.image(qrCode, { type: "png" });
-        qrImage.pipe(fs.createWriteStream("qr.png"));
-      } catch (err) {
-        console.error("❌ Failed to save QR:", err);
-      }
-    }
+    if (qrCode) {
+  console.log("📸 Scan this QR Code (ONLY ONCE):");
+  qrcode.generate(qrCode, { small: true });
+}
+
 
     if (connection === "open") {
       console.log("✅ Bot connected successfully!");
