@@ -11,7 +11,8 @@ import { videoCommand } from "./commands/video.js";
 import { shortCommand } from "./commands/short.js";
 
 import P from "pino";
-import qrcode from "qrcode-terminal";
+import qr from "qr-image";
+import fs from "fs";
 
 /* ===========================
    GLOBAL CRASH PROTECTION
@@ -44,11 +45,16 @@ async function startSock() {
      CONNECTION HANDLER
      =========================== */
   sock.ev.on("connection.update", (update) => {
-    const { connection, lastDisconnect, qr } = update;
+    const { connection, lastDisconnect, qr: qrCode } = update;
 
-    if (qr) {
-      console.log("📸 Scan this QR Code:");
-      qrcode.generate(qr, { small: true });
+    if (qrCode) {
+      console.log("📸 QR Code received, saving as qr.png...");
+      try {
+        const qrImage = qr.image(qrCode, { type: "png" });
+        qrImage.pipe(fs.createWriteStream("qr.png"));
+      } catch (err) {
+        console.error("❌ Failed to save QR:", err);
+      }
     }
 
     if (connection === "open") {
@@ -57,7 +63,6 @@ async function startSock() {
 
     if (connection === "close") {
       const statusCode = lastDisconnect?.error?.output?.statusCode;
-
       if (statusCode === DisconnectReason.loggedOut) {
         console.log("❌ Logged out. Delete auth_info and restart deployment.");
       } else {
