@@ -18,20 +18,15 @@ import { join } from "path";
 /* ===========================
    GLOBAL CRASH PROTECTION
    =========================== */
-process.on("uncaughtException", (err) => {
-  console.error("UNCAUGHT EXCEPTION:", err);
-});
-
-process.on("unhandledRejection", (reason) => {
-  console.error("UNHANDLED REJECTION:", reason);
-});
+process.on("uncaughtException", (err) => console.error("UNCAUGHT EXCEPTION:", err));
+process.on("unhandledRejection", (reason) => console.error("UNHANDLED REJECTION:", reason));
 
 /* ===========================
    START SOCKET
    =========================== */
 async function startSock() {
-const authPath = join(process.cwd(), "data", "auth_info"); // absolute path to persistent folder
-const { state, saveCreds } = await useMultiFileAuthState(authPath);
+  const authPath = join(process.cwd(), "data", "auth_info"); // persistent folder
+  const { state, saveCreds } = await useMultiFileAuthState(authPath);
 
   const { version } = await fetchLatestBaileysVersion();
 
@@ -50,8 +45,10 @@ const { state, saveCreds } = await useMultiFileAuthState(authPath);
   sock.ev.on("connection.update", (update) => {
     const { connection, lastDisconnect, qr: qrCode } = update;
 
-    if (qrCode) {
-      console.log("📸 QR Code received, saving as qr.png...");
+    // Only save QR if no session exists
+    const sessionFile = join(authPath, "creds.json");
+    if (qrCode && !fs.existsSync(sessionFile)) {
+      console.log("📸 QR Code received! Scan this once and session will persist.");
       try {
         const qrImage = qr.image(qrCode, { type: "png" });
         qrImage.pipe(fs.createWriteStream("qr.png"));
@@ -92,87 +89,33 @@ const { state, saveCreds } = await useMultiFileAuthState(authPath);
 
     try {
       if (body.startsWith(".ping")) {
+        await sock.sendMessage(chatId, { text: "✅ Bot Online!" }, { quoted: msg });
+      } else if (body.startsWith(".menu")) {
         await sock.sendMessage(chatId, {
-          text: `╭─「 *Webs BOT STATUS* 」
-│⚡ Speed: Fast
-│🟢 Status: Online
-╰─────────────`
+          text: "📜 Menu: .ping | .menu | .alive | .play | .lyrics | .video | .short | .vv | .developer"
         }, { quoted: msg });
-      }
-
-      else if (body.startsWith(".menu")) {
-        await sock.sendMessage(chatId, {
-          text: `
-┏━━〔 🤖 *Webs Bot Menu* 〕━━┓
-┃ ⚙️ .ping
-┃ 📜 .menu
-┃ ✅ .alive
-┃ ▶️ .play
-┃ 🎵 .lyrics
-┃ 🎥 .video
-┃ 📱 .short
-┃ 👁 .vv
-┃ 👤 .developer
-┗━━━━━━━━━━━━━━━━━━━━━━┛`.trim()
-        }, { quoted: msg });
-      }
-
-      else if (body.startsWith(".alive")) {
-        await sock.sendMessage(chatId, {
-          text: "✅ Webs Bot is alive and running!"
-        }, { quoted: msg });
-      }
-
-      else if (body.startsWith(".developer")) {
-        await sock.sendMessage(chatId, {
-          text: "Developed by Webs — Information Systems student at UNIMA"
-        }, { quoted: msg });
-      }
-
-      else if (body.startsWith(".play")) {
+      } else if (body.startsWith(".alive")) {
+        await sock.sendMessage(chatId, { text: "✅ Webs Bot is alive!" }, { quoted: msg });
+      } else if (body.startsWith(".developer")) {
+        await sock.sendMessage(chatId, { text: "Developed by Webs — UNIMA" }, { quoted: msg });
+      } else if (body.startsWith(".play")) {
         await playCommand(sock, chatId, msg);
-      }
-
-      else if (body.startsWith(".lyrics")) {
+      } else if (body.startsWith(".lyrics")) {
         await lyricsCommand(sock, chatId, msg);
-      }
-
-      else if (body.startsWith(".video")) {
+      } else if (body.startsWith(".video")) {
         await videoCommand(sock, chatId, msg);
-      }
-
-      else if (body.startsWith(".short")) {
+      } else if (body.startsWith(".short")) {
         await shortCommand(sock, chatId, msg);
+      } else if (body.startsWith(".vv")) {
+        const quoted = msg.message?.extendedTextMessage?.contextInfo?.quotedMessage;
+        if (!quoted) return sock.sendMessage(chatId, { text: "❗ Reply to a ViewOnce media." }, { quoted: msg });
+
+        const buffer = await downloadMediaMessage({ message: quoted }, "buffer", {}, { logger: P({ level: "silent" }) });
+        await sock.sendMessage(chatId, { image: buffer, caption: "👁 ViewOnce revealed" }, { quoted: msg });
       }
-
-      else if (body.startsWith(".vv")) {
-        const quoted =
-          msg.message?.extendedTextMessage?.contextInfo?.quotedMessage;
-
-        if (!quoted) {
-          return sock.sendMessage(chatId, {
-            text: "❗ Reply to a ViewOnce image/video."
-          }, { quoted: msg });
-        }
-
-        const buffer = await downloadMediaMessage(
-          { message: quoted },
-          "buffer",
-          {},
-          { logger: P({ level: "silent" }) }
-        );
-
-        await sock.sendMessage(chatId, {
-          image: buffer,
-          caption: "👁 ViewOnce revealed"
-        }, { quoted: msg });
-      }
-
     } catch (err) {
       console.error("COMMAND ERROR:", err);
-      await sock.sendMessage(chatId, {
-        text: "❌ An internal error occurred."
-      }, { quoted: msg });
+      await sock.sendMessage(chatId, { text: "❌ Internal error." }, { quoted: msg });
     }
   });
 }
