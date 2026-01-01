@@ -2,10 +2,10 @@
   "name": "ms-bot-v1.0",
   "version": "1.0.0",
   "type": "module",
-  "main": "Bot/index.js",
+  "main": "index.js",
   "scripts": {
-    "start": "node Bot/index.js",
-    "replit": "node Bot/index.js"
+    "start": "node index.js",
+    "replit": "node index.js"
   },
   "dependencies": {
     "@whiskeysockets/baileys": "^6.7.0",
