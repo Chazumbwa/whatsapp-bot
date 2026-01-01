@@ -1,0 +1,16 @@
+{
+  "name": "ms-bot-v1.0",
+  "version": "1.0.0",
+  "type": "module",
+  "main": "Bot/index.js",
+  "scripts": {
+    "start": "node Bot/index.js",
+    "replit": "node Bot/index.js"
+  },
+  "dependencies": {
+    "@whiskeysockets/baileys": "^6.7.0",
+    "pino": "^8.14.2",
+    "qrcode-terminal": "^0.12.0"
+    "axios": "^1.6.0"
+  }
+}

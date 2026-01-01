@@ -1,0 +1,84 @@
+import yts from "yt-search";
+import fs from "fs";
+import { exec } from "child_process";
+import path from "path";
+import ffmpegPath from "ffmpeg-static";
+
+export async function videoCommand(sock, chatId, msg) {
+  try {
+    const text =
+      msg.message?.conversation ||
+      msg.message?.extendedTextMessage?.text ||
+      "";
+
+    const query = text.split(" ").slice(1).join(" ").trim();
+    if (!query) {
+      return sock.sendMessage(chatId, {
+        text: "🎬 Usage: .video song name"
+      }, { quoted: msg });
+    }
+
+    const search = await yts(query);
+    if (!search.videos.length) {
+      return sock.sendMessage(chatId, {
+        text: "❌ No video results found."
+      }, { quoted: msg });
+    }
+
+    const video = search.videos[0];
+
+    // Temp folder safety
+    if (!fs.existsSync("tmp")) fs.mkdirSync("tmp");
+
+    const safeTitle = video.title.replace(/[^\w\s]/gi, "").substring(0, 50);
+    const filePath = path.join("tmp", `${Date.now()}-${safeTitle}.mp4`);
+
+    await sock.sendMessage(chatId, {
+      text: `🎬 Downloading video:\n*${video.title}*\n\n⏳ Please wait...`
+    }, { quoted: msg });
+
+    // yt-dlp command (WhatsApp-safe resolution)
+    const cmd = `
+yt-dlp \
+-f "bv*[height<=480]+ba/best[height<=480]" \
+--merge-output-format mp4 \
+--ffmpeg-location "${ffmpegPath}" \
+-o "${filePath}" \
+"${video.url}"
+    `.trim();
+
+    exec(cmd, async (err) => {
+      if (err) {
+        console.error("VIDEO yt-dlp error:", err);
+        return sock.sendMessage(chatId, {
+          text: "❌ Video download failed."
+        }, { quoted: msg });
+      }
+
+      const stats = fs.statSync(filePath);
+
+      // WhatsApp limit guard (~100MB)
+      if (stats.size > 95 * 1024 * 1024) {
+        fs.unlinkSync(filePath);
+        return sock.sendMessage(chatId, {
+          text: "⚠️ Video too large for WhatsApp.\nTry a shorter video."
+        }, { quoted: msg });
+      }
+
+      await sock.sendMessage(chatId, {
+        document: fs.readFileSync(filePath),
+        mimetype: "video/mp4",
+        fileName: `${safeTitle}.mp4`,
+        caption: `🎬 ${video.title}`
+      }, { quoted: msg });
+
+      fs.unlinkSync(filePath);
+    });
+
+  } catch (e) {
+    console.error("VIDEO ERROR:", e);
+    await sock.sendMessage(chatId, {
+      text: "❌ Unexpected error occurred."
+    }, { quoted: msg });
+  }
+}
