@@ -60,7 +60,7 @@ export async function lyricsCommand(sock, chatId, msg) {
       : lyrics;
 
     await sock.sendMessage(chatId, {
-      text: `🎵 *${song}*\n👤 ${artist}\n\n${trimmedLyrics}`
+      text: `📄 *Lyrics for: ${song} - ${artist}*\n\n${trimmedLyrics}\n\n🎤 Powered by lyrics.ovh`
     }, { quoted: msg });
 
   } catch (err) {

@@ -56,7 +56,7 @@ export async function playCommand(sock, chatId, msg) {
 
     await sock.sendMessage(
       chatId,
-      { text: `⏳ Downloading: *${video.title}*` },
+      { text: `⏳ Downloading: *${video.title}*\n⏱️ Duration: ${video.duration?.timestamp || 'Unknown'}\n👀 Views: ${video.views?.toLocaleString() || 'Unknown'}` },
       { quoted: msg }
     );
 
@@ -66,6 +66,7 @@ export async function playCommand(sock, chatId, msg) {
       "mp3",
       "--ffmpeg-location",
       ffmpegPath,
+      "--quiet",
       "-o",
       filePath,
       video.url

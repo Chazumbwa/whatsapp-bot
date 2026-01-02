@@ -84,40 +84,101 @@ async function startSock() {
       msg.message?.imageMessage?.caption ||
       "";
 
-    try {
-      if (body.startsWith(".ping")) {
-        await sock.sendMessage(chatId, { text: "✅ Bot Online!" }, { quoted: msg });
-      } else if (body.startsWith(".menu")) {
-        await sock.sendMessage(chatId, {
-          text: "📜 Menu: .ping | .menu | .alive | .play | .lyrics | .video | .short | .vv | .developer"
-        }, { quoted: msg });
-      } else if (body.startsWith(".alive")) {
-        await sock.sendMessage(chatId, { text: "✅ Webs Bot is alive!" }, { quoted: msg });
-      } else if (body.startsWith(".developer")) {
-        await sock.sendMessage(chatId, { text: "Developed by Webs — UNIMA" }, { quoted: msg });
-      } else if (body.startsWith(".play")) {
-        await playCommand(sock, chatId, msg);
-      } else if (body.startsWith(".lyrics")) {
-        await lyricsCommand(sock, chatId, msg);
-      } else if (body.startsWith(".video")) {
-        await videoCommand(sock, chatId, msg);
-      } else if (body.startsWith(".short")) {
-        await shortCommand(sock, chatId, msg);
-      } else if (body.startsWith(".vv")) {
-        const quoted = msg.message?.extendedTextMessage?.contextInfo?.quotedMessage;
-        if (!quoted) return sock.sendMessage(chatId, { text: "❗ Reply to a ViewOnce media." }, { quoted: msg });
+   
+    // ===== .ping =====
+    if (body.startsWith(".ping")) {
+      await sock.sendMessage(chatId, {
+        text: `╭─「 *Webs BOT STATUS* 」
+│⚡ Speed: Fast
+│🟢 Status: Online
+╰─────────────`
+      }, { quoted: msg });
+    }
 
-        const buffer = await downloadMediaMessage({ message: quoted }, "buffer", {}, { logger: P({ level: "silent" }) });
-        await sock.sendMessage(chatId, { image: buffer, caption: "👁 ViewOnce revealed" }, { quoted: msg });
+    // ===== .menu =====
+    else if (body.startsWith(".menu")) {
+      await sock.sendMessage(chatId, {
+        text: `
+┏━━〔 🤖 *Webs Bot Menu* 〕━━┓
+┃ ⚙️ .ping
+┃ 📜 .menu
+┃ ✅ .alive
+┃ ▶️ .play
+┃ 👁 .vv
+┃ 👤 .developer
+┃ 🎵 .lyrics
+┃ 📌 .play
+┃ 🎥 .video
+┃ 📱 .short
+┗━━━━━━━━━━━━━━━━━━━━━━┛`.trim()
+      }, { quoted: msg });
+    }
+
+    // ===== .alive =====
+    else if (body.startsWith(".alive")) {
+      await sock.sendMessage(chatId, {
+        text: "✅ Webs Bot is alive and running!"
+      }, { quoted: msg });
+    }
+
+    // ===== .developer =====
+    else if (body.startsWith(".developer")) {
+      await sock.sendMessage(chatId, {
+        text: "Developed by Webs — Information Systems student at UNIMA\n📞 099 555 1995"
+      }, { quoted: msg });
+    }
+
+    // ===== .play =====
+    else if (body.startsWith(".play")) {
+      await playCommand(sock, chatId, msg);
+    }
+
+    // ===== .lyrics =====
+    else if (body.startsWith(".lyrics")) {
+        await lyricsCommand(sock, chatId, msg);
       }
-    } catch (err) {
-      console.error("COMMAND ERROR:", err);
-      await sock.sendMessage(chatId, { text: "❌ Internal error." }, { quoted: msg });
+
+    // ===== .video =====
+    else if (body.startsWith(".video")) {
+        await videoCommand(sock, chatId, msg);
+      }
+      
+    // ===== .short =====
+    else if (body.startsWith(".short")) {
+        await shortCommand(sock, chatId, msg);
+      }
+
+   // ===== .vv =====
+    else if (body.startsWith(".vv")) {
+      const quoted =
+        msg.message?.extendedTextMessage?.contextInfo?.quotedMessage;
+
+      if (!quoted) {
+        return sock.sendMessage(chatId, {
+          text: "❗ Reply to a ViewOnce image/video."
+        }, { quoted: msg });
+      }
+
+      try {
+        const buffer = await downloadMediaMessage(
+          { message: quoted },
+          "buffer",
+          {},
+          { logger: P({ level: "silent" }) }
+        );
+
+        await sock.sendMessage(chatId, {
+          image: buffer,
+          caption: "👁 ViewOnce revealed"
+        }, { quoted: msg });
+
+      } catch {
+        await sock.sendMessage(chatId, {
+          text: "❌ Failed to reveal media."
+        }, { quoted: msg });
+      }
     }
   });
 }
 
-/* ===========================
-   BOOT
-   =========================== */
 startSock();

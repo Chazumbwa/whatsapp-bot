@@ -1,6 +1,6 @@
 import fs from "fs";
 import path from "path";
-import { exec } from "child_process";
+import { spawn } from "child_process";
 import ffmpegPath from "ffmpeg-static";
 
 function isUrl(text) {
@@ -52,26 +52,25 @@ export async function shortCommand(sock, chatId, msg) {
       text: `📥 Downloading ${platform.toUpperCase()} short...\n⏳ Please wait`
     }, { quoted: msg });
 
-    const cmd = `
-yt-dlp \
--f "${format}" \
---merge-output-format mp4 \
---ffmpeg-location "${ffmpegPath}" \
--o "${filePath}" \
-"${url}"
-    `.trim();
+    const args = [
+      "-f", format,
+      "--merge-output-format", "mp4",
+      "--ffmpeg-location", ffmpegPath,
+      "--quiet",
+      "-o", filePath,
+      url
+    ];
 
-    exec(cmd, async (err) => {
-      if (err) {
-        console.error("SHORT ERROR:", err);
+    const ytdlp = spawn("yt-dlp", args);
+
+    ytdlp.on("error", (err) => {
+      console.error("SHORT yt-dlp spawn error:", err);
+    });
+
+    ytdlp.on("close", async (code) => {
+      if (code !== 0 || !fs.existsSync(filePath)) {
         return sock.sendMessage(chatId, {
           text: `❌ Failed to download ${platform} short.`
-        }, { quoted: msg });
-      }
-
-      if (!fs.existsSync(filePath)) {
-        return sock.sendMessage(chatId, {
-          text: "❌ Download failed (no file produced)."
         }, { quoted: msg });
       }
 

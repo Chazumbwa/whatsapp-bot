@@ -1,6 +1,6 @@
 import yts from "yt-search";
 import fs from "fs";
-import { exec } from "child_process";
+import { spawn } from "child_process";
 import path from "path";
 import ffmpegPath from "ffmpeg-static";
 
@@ -34,22 +34,27 @@ export async function videoCommand(sock, chatId, msg) {
     const filePath = path.join("tmp", `${Date.now()}-${safeTitle}.mp4`);
 
     await sock.sendMessage(chatId, {
-      text: `🎬 Downloading video:\n*${video.title}*\n\n⏳ Please wait...`
+      text: `🎬 Downloading video:\n*${video.title}*\n⏱️ Duration: ${video.duration?.timestamp || 'Unknown'}\n👀 Views: ${video.views?.toLocaleString() || 'Unknown'}\n\n⏳ Please wait...`
     }, { quoted: msg });
 
-    // yt-dlp command (WhatsApp-safe resolution)
-    const cmd = `
-yt-dlp \
--f "bv*[height<=480]+ba/best[height<=480]" \
---merge-output-format mp4 \
---ffmpeg-location "${ffmpegPath}" \
--o "${filePath}" \
-"${video.url}"
-    `.trim();
+    // yt-dlp args (WhatsApp-safe resolution)
+    const args = [
+      "-f", "bv*[height<=480]+ba/best[height<=480]",
+      "--merge-output-format", "mp4",
+      "--ffmpeg-location", ffmpegPath,
+      "--quiet",
+      "-o", filePath,
+      video.url
+    ];
 
-    exec(cmd, async (err) => {
-      if (err) {
-        console.error("VIDEO yt-dlp error:", err);
+    const ytdlp = spawn("yt-dlp", args);
+
+    ytdlp.on("error", (err) => {
+      console.error("VIDEO yt-dlp spawn error:", err);
+    });
+
+    ytdlp.on("close", async (code) => {
+      if (code !== 0 || !fs.existsSync(filePath)) {
         return sock.sendMessage(chatId, {
           text: "❌ Video download failed."
         }, { quoted: msg });
