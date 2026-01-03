@@ -50,6 +50,7 @@ async function startSock() {
     const sessionFile = join(authPath, "creds.json");
     if (qrCode) {
   console.log("📸 Scan this QR Code (ONLY ONCE):");
+  console.log("QR Data:", qrCode);
   qrcode.generate(qrCode, { small: true });
 }
 
