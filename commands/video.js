@@ -3,8 +3,17 @@ import fs from "fs";
 import { spawn } from "child_process";
 import path from "path";
 import ffmpegPath from "ffmpeg-static";
+import { checkLimitOrPremium } from "../premium.js";
 
 export async function videoCommand(sock, chatId, msg) {
+  const sender = msg.key.participant || msg.key.remoteJid;
+
+  if (!checkLimitOrPremium(sender, chatId, "video")) {
+    return sock.sendMessage(chatId, {
+      text: "🚫 Daily video download limit reached (3/day).\n\n💎 Upgrade to unlimited downloads by sending K600 only to 099 555 1995 or 088 996 4091 (Edison Chazumbwa)."
+    }, { quoted: msg });
+  }
+
   try {
     const text =
       msg.message?.conversation ||

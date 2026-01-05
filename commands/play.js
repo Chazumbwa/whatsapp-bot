@@ -3,6 +3,7 @@ import fs from "fs";
 import path from "path";
 import { spawn } from "child_process";
 import ffmpegPath from "ffmpeg-static";
+import { checkLimitOrPremium } from "../premium.js";
 
 // ===== simple in-memory locks =====
 const activeChats = new Set();
@@ -14,10 +15,20 @@ if (!fs.existsSync(TMP_DIR)) {
 }
 
 export async function playCommand(sock, chatId, msg) {
+  const sender = msg.key.participant || msg.key.remoteJid;
+
   if (activeChats.has(chatId)) {
     return sock.sendMessage(
       chatId,
       { text: "⏳ Please wait, a song is already downloading…" },
+      { quoted: msg }
+    );
+  }
+
+  if (!checkLimitOrPremium(sender, chatId, "song")) {
+    return sock.sendMessage(
+      chatId,
+      { text: "🚫 Daily song download limit reached (5/day).\n\n💎 Upgrade to unlimited downloads by sending K600 only to 099 555 1995 or 088 996 4091 (Edison Chazumbwa)." },
       { quoted: msg }
     );
   }

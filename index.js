@@ -9,6 +9,7 @@ import { playCommand } from "./commands/play.js";
 import { lyricsCommand } from "./commands/lyrics.js";
 import { videoCommand } from "./commands/video.js";
 import { shortCommand } from "./commands/short.js";
+import { addPremium } from "./premium.js";
 
 import P from "pino";
 import qr from "qr-image";
@@ -21,6 +22,8 @@ import qrcode from "qrcode-terminal";
    =========================== */
 process.on("uncaughtException", (err) => console.error("UNCAUGHT EXCEPTION:", err));
 process.on("unhandledRejection", (reason) => console.error("UNHANDLED REJECTION:", reason));
+
+const adminJid = "265995551995@s.whatsapp.net"; // Admin JID for premium commands
 
 /* ===========================
    START SOCKET
@@ -148,6 +151,24 @@ async function startSock() {
     else if (body.startsWith(".short")) {
         await shortCommand(sock, chatId, msg);
       }
+
+    // ===== .addpremium =====
+    else if (body.startsWith(".addpremium")) {
+      const sender = msg.key.participant || msg.key.remoteJid;
+      if (sender !== adminJid) {
+        return sock.sendMessage(chatId, { text: "❌ Admin only command." }, { quoted: msg });
+      }
+      const args = body.split(" ").slice(1);
+      if (args.length !== 1) {
+        return sock.sendMessage(chatId, { text: "Usage: .addpremium <phone_number>" }, { quoted: msg });
+      }
+      const phone = args[0].replace(/\D/g, '');
+      const country = "265"; // Malawi country code
+      const fullPhone = phone.startsWith(country) ? phone : country + phone;
+      const jid = fullPhone + "@s.whatsapp.net";
+      addPremium(jid);
+      await sock.sendMessage(chatId, { text: `✅ Added premium for ${jid} (30 days)` }, { quoted: msg });
+    }
 
    // ===== .vv =====
     else if (body.startsWith(".vv")) {
