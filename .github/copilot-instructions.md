@@ -6,6 +6,7 @@ This is a Baileys-based WhatsApp bot with modular command handlers. Core structu
 - `commands/`: Individual command modules (e.g., `play.js`, `video.js`) exporting async functions
 - `data/auth_info/`: Persistent Baileys authentication state (auto-managed)
 - `data/usage.json`: Daily usage tracking for rate limiting (resets daily)
+- `data/premium.json`: Premium user data with expiration timestamps
 - `tmp/`: Temporary files for downloads (cleaned after use)
 
 ## Command Pattern
@@ -16,65 +17,49 @@ Commands are triggered by messages starting with "." (e.g., ".play song name"). 
 - Uses try-catch with user-friendly error responses
 - Cleans up temp files immediately after sending
 
-Example from `commands/play.js`:
-```javascript
-const query = text.split(" ").slice(1).join(" ").trim();
-if (!query) return sock.sendMessage(chatId, { text: "Usage: .play song name" }, { quoted: msg });
-```
+# Copilot Instructions — WhatsApp Bot (Baileys)
 
-## Built-in Commands
-Core commands implemented directly in `index.js`:
-- `.ping`: Status check with formatted response
-- `.menu`: Lists all available commands
-- `.alive`: Simple alive confirmation
-- `.developer`: Developer info
-- `.vv`: Reveals ViewOnce media using `downloadMediaMessage`
+Purpose: Help AI agents be immediately productive in this repo — quick architecture, conventions, and copy-paste examples.
 
-## Media Handling
-- Downloads use `yt-dlp` with platform-specific formats (see `commands/video.js` for YouTube, `commands/short.js` for shorts/TikTok/Instagram)
-- Audio/video sent as `document` with appropriate mimetypes (`audio/mpeg`, `video/mp4`)
-- Size limits: Videos capped at 95MB for WhatsApp compatibility
-- Temp files named with timestamps: `path.join("tmp", `${Date.now()}.mp3`)`
-- Safe filenames: `video.title.replace(/[^\w\s.-]/g, "")` or `video.title.replace(/[^\w\s]/gi, "").substring(0, 50)`
+Architecture (big picture)
+- `index.js`: Connection, QR auth, message routing, built-in commands and dispatcher.
+- `commands/*.js`: Modular command handlers, each exported as an async function accepting `(sock, chatId, msg)`.
+- `data/`: persistent state: `auth_info/` (Baileys creds), `usage.json` (daily counts), `premium.json` (premium users).
+- `tmp/`: ephemeral download files (must be removed after use).
 
-## Concurrency Control
-Use in-memory `Set` for chat-specific locks to prevent overlapping operations:
-```javascript
-const activeChats = new Set();
-if (activeChats.has(chatId)) return; // Block concurrent requests
-activeChats.add(chatId);
-// ... process ...
-activeChats.delete(chatId);
-```
+Core conventions & examples
+- Command trigger: messages starting with `.` (e.g., `.play track name`). See [index.js](index.js).
+- Text extraction (canonical):
+	`const text = msg.message?.conversation || msg.message?.extendedTextMessage?.text || msg.message?.imageMessage?.caption || ""`
+	`const query = text.split(" ").slice(1).join(" ").trim();`
+- Replies should include `{ quoted: msg }` to keep context in replies.
+- Concurrency: use an in-memory `Set` (e.g., `activeChats`) to prevent duplicate processing for the same chat.
+- Temp files: name with timestamp (`path.join("tmp", `${Date.now()}.mp3`)`) and always delete in `finally`.
 
-## Rate Limiting
-To prevent resource exhaustion on Railway free tier:
-- 5 songs/day per user (.play command)
-- 3 videos/day per user (.video and .short commands)
-- Usage tracked in `data/usage.json` with daily resets
-- Check `checkAndIncrementLimit(chatId, "song"|"video")` before processing downloads
-- When limit reached, prompt for monetization upgrade with payment details
+Media & integration points
+- Downloads rely on `yt-dlp` and `ffmpeg` (Dockerfile installs them). Respect WhatsApp size limits (videos ~95MB).
+- Send media as `document` when appropriate; set mime types (`audio/mpeg`, `video/mp4`).
+- Safe filename example used in code: `video.title.replace(/[^\w\s.-]/g, "")`.
 
-## Premium System
-- Admin-only command `.addpremium <phone_number>` to grant 30-day premium access
-- Premium users bypass daily rate limits
-- Stored in `data/premium.json` with `addedAt` and `expiresAt` timestamps
-- Helper functions: `isPremium(jid)`, `addPremium(jid)`, `checkLimitOrPremium(sender, chatId, type)`
-- Expired premiums cleaned up automatically on check
+Rate limiting & premium
+- Limits: 5 songs/day for `.play`, 3 videos/day for `.video`/`.short`. Tracked in `data/usage.json`.
+- Premium: stored in `data/premium.json` with `addedAt`/`expiresAt`. Admin-managed via `.addpremium` (admin JID: `265995551995@s.whatsapp.net`).
+- Use `rateLimit.js` and `premium.js` helpers for checks like `isPremium()` and `checkAndIncrementLimit()`.
 
-## Development Workflow
-- `npm start`: Runs `node index.js`
-- First run generates QR code for WhatsApp auth (scan once, persists in `data/auth_info/`)
-- Logs: Pino logger set to silent level
-- Docker deployment: Builds image with yt-dlp and ffmpeg pre-installed
+Developer workflows
+- Run locally: `npm start` (runs `node index.js`). First run requires scanning QR; auth persists under `data/auth_info/`.
+- Docker: use the provided `Dockerfile` for builds with `yt-dlp` and `ffmpeg` included.
 
-## Key Files
-- `index.js`: Message routing and connection logic (includes built-in commands like .ping, .menu)
-- `commands/play.js`: yt-dlp audio download example with spawn and file cleanup
-- `commands/video.js`: Video download with size checks
-- `commands/short.js`: Multi-platform short video download with platform detection
-- `commands/lyrics.js`: Lyrics fetch using yt-search for metadata and lyrics.ovh API
-- `rateLimit.js`: Daily usage tracking and limit enforcement
-- `premium.js`: Premium user management and limit bypass
-- `Dockerfile`: Deployment setup with system dependencies</content>
-<parameter name="filePath">c:/Users/Ephron Cej2y Ricoh/Music/WhatsappBot/.github/copilot-instructions.md
+Files to inspect first
+- [index.js](index.js) — routing, built-in commands, and the dispatcher.
+- [commands/play.js](commands/play.js) — example audio download flow and cleanup.
+- [commands/video.js](commands/video.js) — video download + size-check pattern.
+- [rateLimit.js](rateLimit.js), [premium.js](premium.js) — limit and premium business rules.
+
+Editing notes for AI agents
+- Preserve message quoting (`{ quoted: msg }`) in user-facing replies.
+- Always delete temp files; prefer `try/finally` cleanup.
+- Do not alter files under `data/auth_info/` structure — they're Baileys-managed credentials.
+- When adding external APIs or secrets, ask whether to store them in environment variables (Docker) or local config.
+
+If you want changes, tell me which sections to expand or which command examples to add.

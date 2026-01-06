@@ -9,6 +9,8 @@ import { playCommand } from "./commands/play.js";
 import { lyricsCommand } from "./commands/lyrics.js";
 import { videoCommand } from "./commands/video.js";
 import { shortCommand } from "./commands/short.js";
+import { instagramCommand } from "./commands/instagram.js";
+import { spotifyCommand } from "./commands/spotify.js"; 
 import { addPremium } from "./premium.js";
 
 import P from "pino";
@@ -114,6 +116,8 @@ async function startSock() {
 ┃ 📌 .play
 ┃ 🎥 .video
 ┃ 📱 .short
+┃ 📸 .instagram
+┃ 🎧 .spotify
 ┗━━━━━━━━━━━━━━━━━━━━━━┛`.trim()
       }, { quoted: msg });
     }
@@ -150,6 +154,16 @@ async function startSock() {
     // ===== .short =====
     else if (body.startsWith(".short")) {
         await shortCommand(sock, chatId, msg);
+      }
+
+    // ===== .instagram =====
+    else if (body.startsWith(".instagram")) {
+        await instagramCommand(sock, chatId, msg);
+      }
+
+    // ===== .spotify =====
+    else if (body.startsWith(".spotify")) {
+        await spotifyCommand(sock, chatId, msg);
       }
 
     // ===== .addpremium =====
