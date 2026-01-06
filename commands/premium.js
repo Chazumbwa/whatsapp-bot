@@ -1,6 +1,6 @@
 import fs from "fs";
 import path from "path";
-import { checkAndIncrementLimit } from "./rateLimit.js";
+import { checkAndIncrementLimit } from "../rateLimit.js";
 
 const PREMIUM_FILE = path.join("data", "premium.json");
 
@@ -49,5 +49,6 @@ export function addPremium(jid) {
 
 export function checkLimitOrPremium(sender, chatId, type) {
   if (isPremium(sender)) return true;
-  return checkAndIncrementLimit(chatId, type);
+  // enforce limits per-sender (pass sender JID to rate limiter)
+  return checkAndIncrementLimit(sender, type);
 }

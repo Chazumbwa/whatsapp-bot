@@ -2,7 +2,7 @@ import fs from "fs";
 import path from "path";
 import { spawn } from "child_process";
 import ffmpegPath from "ffmpeg-static";
-import { checkLimitOrPremium } from "../premium.js";
+import { checkLimitOrPremium } from "./premium.js";
 
 function isUrl(text) {
   return /^https?:\/\//i.test(text);

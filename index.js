@@ -11,7 +11,7 @@ import { videoCommand } from "./commands/video.js";
 import { shortCommand } from "./commands/short.js";
 import { instagramCommand } from "./commands/instagram.js";
 import { spotifyCommand } from "./commands/spotify.js"; 
-import { addPremium } from "./premium.js";
+import { addPremium } from "./commands/premium.js";
 
 import P from "pino";
 import qr from "qr-image";
@@ -25,7 +25,7 @@ import qrcode from "qrcode-terminal";
 process.on("uncaughtException", (err) => console.error("UNCAUGHT EXCEPTION:", err));
 process.on("unhandledRejection", (reason) => console.error("UNHANDLED REJECTION:", reason));
 
-const adminJid = "265995551995@s.whatsapp.net"; // Admin JID for premium commands
+const adminJids = ["265995551995@s.whatsapp.net", "265890061520@s.whatsapp.net"]; // Admin JIDs for premium commands
 
 /* ===========================
    START SOCKET
@@ -61,7 +61,7 @@ async function startSock() {
 
 
     if (connection === "open") {
-      console.log("✅ Bot connected successfully!");
+      console.log("✅ Webs Bot connected successfully!");
     }
 
     if (connection === "close") {
@@ -96,7 +96,7 @@ async function startSock() {
       await sock.sendMessage(chatId, {
         text: `╭─「 *Webs BOT STATUS* 」
 │⚡ Speed: Fast
-│🟢 Status: Online
+│🟢 Status: Webs Bot Online
 ╰─────────────`
       }, { quoted: msg });
     }
@@ -118,6 +118,7 @@ async function startSock() {
 ┃ 📱 .short
 ┃ 📸 .instagram
 ┃ 🎧 .spotify
+┃ 💰 .addpremium
 ┗━━━━━━━━━━━━━━━━━━━━━━┛`.trim()
       }, { quoted: msg });
     }
@@ -169,7 +170,8 @@ async function startSock() {
     // ===== .addpremium =====
     else if (body.startsWith(".addpremium")) {
       const sender = msg.key.participant || msg.key.remoteJid;
-      if (sender !== adminJid) {
+      console.log("Sender JID:", sender);
+      if (!adminJids.includes(sender)) {
         return sock.sendMessage(chatId, { text: "❌ Admin only command." }, { quoted: msg });
       }
       const args = body.split(" ").slice(1);

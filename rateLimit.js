@@ -29,17 +29,18 @@ function saveUsage(usage) {
   }
 }
 
-export function checkAndIncrementLimit(chatId, type) {
+export function checkAndIncrementLimit(senderJid, type) {
+  // Track usage per-sender (user JID) rather than per-chat/group.
   const today = getToday();
   const usage = loadUsage();
 
-  if (!usage[chatId]) {
-    usage[chatId] = { date: today, songs: 0, videos: 0 };
+  if (!usage[senderJid]) {
+    usage[senderJid] = { date: today, songs: 0, videos: 0 };
   }
 
-  const userUsage = usage[chatId];
+  const userUsage = usage[senderJid];
 
-  // Reset if date changed
+  // Reset counts when day changes
   if (userUsage.date !== today) {
     userUsage.date = today;
     userUsage.songs = 0;
@@ -50,7 +51,7 @@ export function checkAndIncrementLimit(chatId, type) {
   const current = userUsage[type + "s"]; // songs or videos
 
   if (current >= limit) {
-    return false; // Limit reached
+    return false; // Limit reached for this sender
   }
 
   userUsage[type + "s"]++;

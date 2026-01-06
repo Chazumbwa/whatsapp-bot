@@ -1,7 +1,7 @@
 import axios from 'axios';
 import fs from "fs";
 import path from "path";
-import { checkLimitOrPremium } from "../premium.js";
+import { checkLimitOrPremium } from "./premium.js";
 
 const TMP_DIR = "tmp";
 

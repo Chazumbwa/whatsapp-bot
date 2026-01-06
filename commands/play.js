@@ -3,7 +3,7 @@ import fs from "fs";
 import path from "path";
 import { spawn } from "child_process";
 import ffmpegPath from "ffmpeg-static";
-import { checkLimitOrPremium } from "../premium.js";
+import { checkLimitOrPremium } from "./premium.js";
 
 // ===== simple in-memory locks =====
 const activeChats = new Set();

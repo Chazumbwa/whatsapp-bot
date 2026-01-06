@@ -3,7 +3,7 @@ import fs from "fs";
 import { spawn } from "child_process";
 import path from "path";
 import ffmpegPath from "ffmpeg-static";
-import { checkLimitOrPremium } from "../premium.js";
+import { checkLimitOrPremium } from "./premium.js";
 
 export async function videoCommand(sock, chatId, msg) {
   const sender = msg.key.participant || msg.key.remoteJid;
