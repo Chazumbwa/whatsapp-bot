@@ -25,7 +25,7 @@ import qrcode from "qrcode-terminal";
 process.on("uncaughtException", (err) => console.error("UNCAUGHT EXCEPTION:", err));
 process.on("unhandledRejection", (reason) => console.error("UNHANDLED REJECTION:", reason));
 
-const adminJids = ["265995551995@s.whatsapp.net", "265890061520@s.whatsapp.net"]; // Admin JIDs for premium commands
+const adminJids = ["265995551995@s.whatsapp.net", "265890061520@s.whatsapp.net", "192380812664956@lid"]; // Admin JIDs for premium commands
 
 /* ===========================
    START SOCKET
