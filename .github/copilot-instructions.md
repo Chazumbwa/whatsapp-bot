@@ -57,9 +57,11 @@
   - **Songs** (`.play`, `.spotify`): 5/day
   - **Videos** (`.video`, `.short`, `.instagram`): 3/day
 - **Scope**: Per **sender JID** (user), not per group. `data/usage.json` tracks `{ [senderJid]: { date, songs, videos } }` and resets at UTC midnight.
-- **Premium** (`data/premium.json`): `{ [jid]: { addedAt, expiresAt } }` where `expiresAt` is 30 days from `addedAt` in milliseconds. Admins add via `.addpremium <phone>` (auto-formats to country code 265 for Malawi). Premium users bypass limits.
+- **Premium** (`data/premium.json`): `{ [jid]: { addedAt, expiresAt } }` where `expiresAt` is 30 days from `addedAt` in milliseconds. Admins add via `.addpremium <phone|jid>`:
+  - Phone format: `.addpremium 0993287093` → stores as `2650993287093@s.whatsapp.net`
+  - JID format: `.addpremium 185624896229398@lid` → stores as-is (for linked devices)
 - **Admin JIDs** hardcoded in `index.js` and `commands/premium.js` (must stay in sync). Only those IDs can run `.addpremium`.
-- **Important**: The sender's JID at download time must exactly match the JID stored in `premium.json`. Check logs for "Sender JID:" to verify format matches.
+- **Critical**: Users accessing via linked devices (companion app) have different JID formats (`@lid` suffix) than phone users (`@s.whatsapp.net`). Add premium for both formats if user accesses both ways. Check logs for "Sender JID:" to see actual format.
 - **Safe filenames**: `title.replace(/[^\w\s.-]/g, "").substring(0, 50)` to avoid system errors.
 - **Tools available**: `ffmpeg-static` (npm), `yt-dlp` binary (Docker or system install).
 

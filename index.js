@@ -187,15 +187,24 @@ if (!sender || !adminJids.includes(sender)) {
   if (args.length !== 1) {
     return sock.sendMessage(
       chatId,
-      { text: "Usage: .addpremium <phone_number>" },
+      { text: "Usage: .addpremium <phone_number|jid>\nExamples:\n.addpremium 0993287093\n.addpremium 185624896229398@lid" },
       { quoted: msg }
     );
   }
 
-  const phone = args[0].replace(/\D/g, "");
-  const country = "265";
-  const fullPhone = phone.startsWith(country) ? phone : country + phone;
-  const jid = `${fullPhone}@s.whatsapp.net`;
+  let jid;
+  const input = args[0];
+  
+  // Check if input is already a full JID (contains @)
+  if (input.includes("@")) {
+    jid = input; // Use as-is
+  } else {
+    // Treat as phone number and format it
+    const phone = input.replace(/\D/g, "");
+    const country = "265";
+    const fullPhone = phone.startsWith(country) ? phone : country + phone;
+    jid = `${fullPhone}@s.whatsapp.net`;
+  }
 
   addPremium(jid);
 
