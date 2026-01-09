@@ -4,9 +4,11 @@ import { checkAndIncrementLimit } from "../rateLimit.js";
 
 const PREMIUM_FILE = "/data/premium.json";
 const DATA_DIR = "/data";
+// This array must match the one in index.js
 const adminJids = [
   "265995551995@s.whatsapp.net",
-  "265890061520@s.whatsapp.net"
+  "265890061520@s.whatsapp.net",
+  "192380812664956@lid"
 ];
 
 function loadPremium() {
@@ -33,14 +35,22 @@ function savePremium(premium) {
 
 export function isPremium(jid) {
   const premium = loadPremium();
-  if (!premium[jid]) return false;
+  console.log("✅ Checking premium for JID:", jid);
+  console.log("📊 Premium DB:", Object.keys(premium));
+  
+  if (!premium[jid]) {
+    console.log("❌ JID not found in premium DB");
+    return false;
+  }
 
   const now = Date.now();
   if (premium[jid].expiresAt < now) {
+    console.log("⏰ Premium expired for:", jid);
     delete premium[jid];
     savePremium(premium);
     return false;
   }
+  console.log("✅ Premium ACTIVE for:", jid);
   return true;
 }
 
@@ -50,15 +60,25 @@ export function addPremium(jid) {
   const expiresAt = addedAt + 30 * 24 * 60 * 60 * 1000; // 30 days
   premium[jid] = { addedAt, expiresAt };
   savePremium(premium);
+  console.log("💎 Premium added for:", jid, "- Expires:", new Date(expiresAt).toISOString());
 }
 
 export function checkLimitOrPremium(sender, type) {
+  console.log(`🔍 Checking limit/premium for ${sender} (type: ${type})`);
+  
   // Admins are always unlimited
-  if (adminJids.includes(sender)) return true;
+  if (adminJids.includes(sender)) {
+    console.log("👑 Sender is ADMIN - unlimited access");
+    return true;
+  }
 
   // Premium users are unlimited
-  if (isPremium(sender)) return true;
+  if (isPremium(sender)) {
+    console.log("💎 Sender is PREMIUM - unlimited access");
+    return true;
+  }
 
   // Everyone else is rate-limited
+  console.log("📊 Applying rate limit for:", sender);
   return checkAndIncrementLimit(sender, type);
 }

@@ -12,6 +12,8 @@ if (!fs.existsSync(TMP_DIR)) {
 
 export async function spotifyCommand(sock, chatId, message) {
     const sender = message.key.participant || message.key.remoteJid;
+    
+    console.log("📥 SPOTIFY command - Sender JID:", sender);
 
     if (!checkLimitOrPremium(sender, chatId, "song")) {
         return sock.sendMessage(chatId, {

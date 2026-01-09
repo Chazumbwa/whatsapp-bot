@@ -7,6 +7,8 @@ import { checkLimitOrPremium } from "./premium.js";
 
 export async function videoCommand(sock, chatId, msg) {
   const sender = msg.key.participant || msg.key.remoteJid;
+  
+  console.log("📥 VIDEO command - Sender JID:", sender);
 
   if (!checkLimitOrPremium(sender, chatId, "video")) {
     return sock.sendMessage(chatId, {

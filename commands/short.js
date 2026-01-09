@@ -28,6 +28,8 @@ function getFormat(platform) {
 
 export async function shortCommand(sock, chatId, msg) {
   const sender = msg.key.participant || msg.key.remoteJid;
+  
+  console.log("📥 SHORT command - Sender JID:", sender);
 
   if (!checkLimitOrPremium(sender, chatId, "video")) {
     return sock.sendMessage(chatId, {

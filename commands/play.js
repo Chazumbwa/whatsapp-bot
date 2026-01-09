@@ -16,6 +16,8 @@ if (!fs.existsSync(TMP_DIR)) {
 
 export async function playCommand(sock, chatId, msg) {
   const sender = msg.key.participant || msg.key.remoteJid;
+  
+  console.log("📥 PLAY command - Sender JID:", sender);
 
   if (activeChats.has(chatId)) {
     return sock.sendMessage(

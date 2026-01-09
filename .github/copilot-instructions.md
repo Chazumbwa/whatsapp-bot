@@ -53,12 +53,13 @@
   ```javascript
   if (stats.size > 95 * 1024 * 1024) {
 ## 5. Rate-Limiting & Premium (per-sender)
-- **Limits** (enforced via `checkLimitOrPremium(sender, chatId, type)` in `premium.js`):
-  - **Songs** (`.play`): 5/day
-  - **Videos** (`.video`, `.short`, `.instagram`, `.spotify`): 3/day
+- **Limits** (enforced via `checkLimitOrPremium(sender, type)` in `premium.js`):
+  - **Songs** (`.play`, `.spotify`): 5/day
+  - **Videos** (`.video`, `.short`, `.instagram`): 3/day
 - **Scope**: Per **sender JID** (user), not per group. `data/usage.json` tracks `{ [senderJid]: { date, songs, videos } }` and resets at UTC midnight.
 - **Premium** (`data/premium.json`): `{ [jid]: { addedAt, expiresAt } }` where `expiresAt` is 30 days from `addedAt` in milliseconds. Admins add via `.addpremium <phone>` (auto-formats to country code 265 for Malawi). Premium users bypass limits.
-- **Admin JIDs** hardcoded in `index.js` (line ~30). Only those IDs can run
+- **Admin JIDs** hardcoded in `index.js` and `commands/premium.js` (must stay in sync). Only those IDs can run `.addpremium`.
+- **Important**: The sender's JID at download time must exactly match the JID stored in `premium.json`. Check logs for "Sender JID:" to verify format matches.
 - **Safe filenames**: `title.replace(/[^\w\s.-]/g, "").substring(0, 50)` to avoid system errors.
 - **Tools available**: `ffmpeg-static` (npm), `yt-dlp` binary (Docker or system install).
 
