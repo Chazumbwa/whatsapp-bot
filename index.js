@@ -169,28 +169,40 @@ async function startSock() {
 
     // ===== .addpremium =====
     else if (body.startsWith(".addpremium")) {
-      const rawSender = msg.key.participant || msg.key.remoteJid;
-    // remove device/session part like :27
-      const sender = rawSender.split(":")[0];
-      console.log("Sender JID (normalized):", sender);
-      if (!adminJids.includes(sender)) {
-         return sock.sendMessage(
-          chatId,
-          { text: "❌ Admin only command." },
-          { quoted: msg }
-          );
-      }
-      const args = body.split(" ").slice(1);
-      if (args.length !== 1) {
-        return sock.sendMessage(chatId, { text: "Usage: .addpremium <phone_number>" }, { quoted: msg });
-      }
-      const phone = args[0].replace(/\D/g, '');
-      const country = "265"; // Malawi country code
-      const fullPhone = phone.startsWith(country) ? phone : country + phone;
-      const jid = fullPhone + "@s.whatsapp.net";
-      addPremium(jid);
-      await sock.sendMessage(chatId, { text: `✅ Added premium for ${jid} (30 days)` }, { quoted: msg });
-    }
+  const sender = msg.key.participant; // ✅ ALWAYS use participant in groups
+
+  console.log("Sender JID (admin check):", sender);
+
+  if (!sender || !adminJids.includes(sender)) {
+    return sock.sendMessage(
+      chatId,
+      { text: "❌ Admin only command." },
+      { quoted: msg }
+    );
+  }
+
+  const args = body.split(" ").slice(1);
+  if (args.length !== 1) {
+    return sock.sendMessage(
+      chatId,
+      { text: "Usage: .addpremium <phone_number>" },
+      { quoted: msg }
+    );
+  }
+
+  const phone = args[0].replace(/\D/g, "");
+  const country = "265";
+  const fullPhone = phone.startsWith(country) ? phone : country + phone;
+  const jid = `${fullPhone}@s.whatsapp.net`;
+
+  addPremium(jid);
+
+  await sock.sendMessage(
+    chatId,
+    { text: `✅ Added premium for ${jid} (30 days)` },
+    { quoted: msg }
+  );
+ }
 
    // ===== .vv =====
     else if (body.startsWith(".vv")) {
