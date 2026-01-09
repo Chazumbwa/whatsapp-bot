@@ -2,7 +2,12 @@ import fs from "fs";
 import path from "path";
 import { checkAndIncrementLimit } from "../rateLimit.js";
 
-const PREMIUM_FILE = path.join("data", "premium.json");
+const PREMIUM_FILE = "/data/premium.json";
+const DATA_DIR = "/data";
+const adminJids = [
+  "265995551995@s.whatsapp.net",
+  "265890061520@s.whatsapp.net"
+];
 
 function loadPremium() {
   try {
@@ -19,7 +24,7 @@ function loadPremium() {
 
 function savePremium(premium) {
   try {
-    if (!fs.existsSync("data")) fs.mkdirSync("data");
+    if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR, { recursive: true });
     fs.writeFileSync(PREMIUM_FILE, JSON.stringify(premium, null, 2));
   } catch (err) {
     console.error("Error saving premium:", err);
@@ -47,8 +52,13 @@ export function addPremium(jid) {
   savePremium(premium);
 }
 
-export function checkLimitOrPremium(sender, chatId, type) {
+export function checkLimitOrPremium(sender, type) {
+  // Admins are always unlimited
+  if (adminJids.includes(sender)) return true;
+
+  // Premium users are unlimited
   if (isPremium(sender)) return true;
-  // enforce limits per-sender (pass sender JID to rate limiter)
+
+  // Everyone else is rate-limited
   return checkAndIncrementLimit(sender, type);
 }

@@ -12,7 +12,7 @@ export async function lyricsCommand(sock, chatId, msg) {
 
     if (!query) {
       return sock.sendMessage(chatId, {
-        text: "📄 Usage: .lyrics song name"
+        text: "📄 Type this: .lyrics song name"
       }, { quoted: msg });
     }
 

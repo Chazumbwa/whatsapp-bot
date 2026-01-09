@@ -31,7 +31,7 @@ const adminJids = ["265995551995@s.whatsapp.net", "265890061520@s.whatsapp.net"]
    START SOCKET
    =========================== */
 async function startSock() {
-  const authPath = join(process.cwd(), "data", "auth_info"); // persistent folder
+  const authPath = "/data/auth_info"; // persistent folder on Railway volume
   const { state, saveCreds } = await useMultiFileAuthState(authPath);
 
   const { version } = await fetchLatestBaileysVersion();
@@ -94,9 +94,9 @@ async function startSock() {
     // ===== .ping =====
     if (body.startsWith(".ping")) {
       await sock.sendMessage(chatId, {
-        text: `╭─「 *Webs BOT STATUS* 」
+        text: `╭─「 *Webs AI STATUS* 」
 │⚡ Speed: Fast
-│🟢 Status: Webs Bot Online
+│🟢 Status: Online
 ╰─────────────`
       }, { quoted: msg });
     }
@@ -105,7 +105,7 @@ async function startSock() {
     else if (body.startsWith(".menu")) {
       await sock.sendMessage(chatId, {
         text: `
-┏━━〔 🤖 *Webs Bot Menu* 〕━━┓
+┏━━〔 🤖 *Webs AI Available commands* 〕━━┓
 ┃ ⚙️ .ping
 ┃ 📜 .menu
 ┃ ✅ .alive
@@ -126,14 +126,14 @@ async function startSock() {
     // ===== .alive =====
     else if (body.startsWith(".alive")) {
       await sock.sendMessage(chatId, {
-        text: "✅ Webs Bot is alive and running!"
+        text: "✅ Webs AI is alive and running!"
       }, { quoted: msg });
     }
 
     // ===== .developer =====
     else if (body.startsWith(".developer")) {
       await sock.sendMessage(chatId, {
-        text: "Developed by Webs — Information Systems student at UNIMA\n📞 099 555 1995"
+        text: "Developed by Webs, Information Systems student at UNIMA\n📞 099 555 1995"
       }, { quoted: msg });
     }
 
@@ -169,10 +169,16 @@ async function startSock() {
 
     // ===== .addpremium =====
     else if (body.startsWith(".addpremium")) {
-      const sender = msg.key.participant || msg.key.remoteJid;
-      console.log("Sender JID:", sender);
+      const rawSender = msg.key.participant || msg.key.remoteJid;
+    // remove device/session part like :27
+      const sender = rawSender.split(":")[0];
+      console.log("Sender JID (normalized):", sender);
       if (!adminJids.includes(sender)) {
-        return sock.sendMessage(chatId, { text: "❌ Admin only command." }, { quoted: msg });
+         return sock.sendMessage(
+          chatId,
+          { text: "❌ Admin only command." },
+          { quoted: msg }
+          );
       }
       const args = body.split(" ").slice(1);
       if (args.length !== 1) {

@@ -1,7 +1,8 @@
 import fs from "fs";
 import path from "path";
 
-const USAGE_FILE = path.join("data", "usage.json");
+const USAGE_FILE = "/data/usage.json";
+const DATA_DIR = "/data";
 
 function getToday() {
   return new Date().toISOString().split("T")[0]; // YYYY-MM-DD
@@ -22,7 +23,7 @@ function loadUsage() {
 
 function saveUsage(usage) {
   try {
-    if (!fs.existsSync("data")) fs.mkdirSync("data");
+    if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR, { recursive: true });
     fs.writeFileSync(USAGE_FILE, JSON.stringify(usage, null, 2));
   } catch (err) {
     console.error("Error saving usage:", err);
