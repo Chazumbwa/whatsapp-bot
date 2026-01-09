@@ -169,18 +169,20 @@ async function startSock() {
 
     // ===== .addpremium =====
     else if (body.startsWith(".addpremium")) {
-  const sender = msg.key.participant; // ✅ ALWAYS use participant in groups
+  const sender =
+  msg.key.participant ||
+  msg.participant ||
+  msg.message?.extendedTextMessage?.contextInfo?.participant;
 
-  console.log("Sender JID (admin check):", sender);
+  console.log("Sender JID (resolved):", sender);
 
-  if (!sender || !adminJids.includes(sender)) {
-    return sock.sendMessage(
-      chatId,
-      { text: "❌ Admin only command." },
-      { quoted: msg }
-    );
-  }
-
+if (!sender || !adminJids.includes(sender)) {
+  return sock.sendMessage(
+    chatId,
+    { text: "❌ Admin only command." },
+    { quoted: msg }
+  );
+}
   const args = body.split(" ").slice(1);
   if (args.length !== 1) {
     return sock.sendMessage(
