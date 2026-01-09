@@ -101,39 +101,38 @@ async function startSock() {
       }, { quoted: msg });
     }
 
-    // ===== .menu =====
-    else if (body.startsWith(".menu")) {
+    // ===== .help =====
+    else if (body.startsWith(".help")) {
       await sock.sendMessage(chatId, {
         text: `
-┏━━〔 🤖 *Webs AI Available commands* 〕━━┓
-┃ ⚙️ .ping
-┃ 📜 .menu
-┃ ✅ .alive
-┃ ▶️ .play
-┃ 👁 .vv
-┃ 👤 .developer
-┃ 🎵 .lyrics
-┃ 📌 .play
+┏━━〔 🤖 *Webs AI Commands* 〕━━┓
+┃ 🎵 .play
 ┃ 🎥 .video
 ┃ 📱 .short
 ┃ 📸 .instagram
+┃ ▶️ .ping
+┃ 👤 .contact
+┃ 📜 .lyrics
+┃ 📌 .help
+┃ ✅ .status
+┃ 👁 .vv
 ┃ 🎧 .spotify
-┃ 💰 .addpremium
+┃ 💰 .addpremium (admin only command)
 ┗━━━━━━━━━━━━━━━━━━━━━━┛`.trim()
       }, { quoted: msg });
     }
 
-    // ===== .alive =====
-    else if (body.startsWith(".alive")) {
+    // ===== .status =====
+    else if (body.startsWith(".status")) {
       await sock.sendMessage(chatId, {
-        text: "✅ Webs AI is alive and running!"
+        text: "✅ Webs AI is ONLINE"
       }, { quoted: msg });
     }
 
-    // ===== .developer =====
-    else if (body.startsWith(".developer")) {
+    // ===== .contact =====
+    else if (body.startsWith(".contact")) {
       await sock.sendMessage(chatId, {
-        text: "Developed by Webs, Information Systems student at UNIMA\n📞 099 555 1995"
+        text: "Developed by Webs, Information Systems student at UNIMA\n📞 099 555 1995\n📩 specialmail033@gmail.com"
       }, { quoted: msg });
     }
 
