@@ -105,7 +105,7 @@ async function startSock() {
     else if (body.startsWith(".help")) {
       await sock.sendMessage(chatId, {
         text: `
-┏━━〔 🤖 *Webs AI Commands* 〕━━┓
+┏━━〔 *Webs AI Commands* 〕━━┓
 ┃ 🎵 .play
 ┃ 🎥 .video
 ┃ 📱 .short
@@ -117,7 +117,7 @@ async function startSock() {
 ┃ ✅ .status
 ┃ 👁 .vv
 ┃ 🎧 .spotify
-┃ 💰 .addpremium (admin only command)
+┃ 💰 .addpremium (admin command)
 ┗━━━━━━━━━━━━━━━━━━━━━━┛`.trim()
       }, { quoted: msg });
     }
@@ -132,7 +132,7 @@ async function startSock() {
     // ===== .contact =====
     else if (body.startsWith(".contact")) {
       await sock.sendMessage(chatId, {
-        text: "Developed by Webs, Information Systems student at UNIMA\n📞 099 555 1995\n📩 specialmail033@gmail.com"
+        text: "Developed by Webs, Infor Systems student at UNIMA\n📞 099 555 1995\n📩 specialmail033@gmail.com"
       }, { quoted: msg });
     }
 
@@ -209,7 +209,7 @@ if (!sender || !adminJids.includes(sender)) {
 
   await sock.sendMessage(
     chatId,
-    { text: `✅ Added premium for ${jid} (30 days)` },
+    { text: `✅ Added premium for ${jid} ` },
     { quoted: msg }
   );
  }

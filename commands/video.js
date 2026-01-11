@@ -12,7 +12,7 @@ export async function videoCommand(sock, chatId, msg) {
 
   if (!checkLimitOrPremium(sender, chatId, "video")) {
     return sock.sendMessage(chatId, {
-      text: "🚫 Daily video download limit reached (3/day).\n\n💎 Upgrade to unlimited downloads by sending K600 only to 099 555 1995 or 088 996 4091 (Edison Chazumbwa)."
+      text: "🚫 Daily video download limit reached (1/day).\n\n💎 Upgrade to unlimited downloads FOREVER by sending K600 only to 099 555 1995 or 088 996 4091 (Edison Chazumbwa)."
     }, { quoted: msg });
   }
 
